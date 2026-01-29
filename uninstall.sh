@@ -109,7 +109,7 @@ find_backup_files() {
     echo "${found_files[@]}"
 }
 
-# --- 恢复备份 ---
+# --- 恢复备份（增强版：解决文件占用） ---
 restore_backups() {
     log_info "🔄 开始恢复备份..."
     
@@ -127,11 +127,26 @@ restore_backups() {
         
         if [[ -f "$original_file" ]]; then
             log_info "恢复: $original_file"
-            cp "$backup_file" "$original_file"
-            rm "$backup_file"
+            
+            # 使用 rm + mv 方式避免 "Text file busy" 错误
+            # 这样即使文件正在运行也能成功替换
+            rm -f "$original_file"
+            mv "$backup_file" "$original_file"
+            
+            # 恢复可执行权限（如果是二进制文件）
+            if [[ "$original_file" == *"language_server"* ]]; then
+                chmod +x "$original_file"
+            fi
+            
             ((restored_count++))
         else
             log_warn "原文件不存在: $original_file"
+            # 即使原文件不存在，也尝试恢复
+            mv "$backup_file" "$original_file"
+            if [[ "$original_file" == *"language_server"* ]]; then
+                chmod +x "$original_file"
+            fi
+            ((restored_count++))
         fi
     done
     

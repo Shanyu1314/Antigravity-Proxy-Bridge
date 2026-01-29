@@ -1,5 +1,9 @@
 # Antigravity-Proxy-Bridge
 
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/Shanyu1314/Antigravity-Proxy-Bridge/releases)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Linux-lightgrey.svg)](https://github.com/Shanyu1314/Antigravity-Proxy-Bridge)
+
 [English](#english) | [中文](#中文)
 
 ---

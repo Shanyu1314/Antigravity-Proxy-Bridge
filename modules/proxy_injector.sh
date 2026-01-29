@@ -27,7 +27,20 @@ inject_language_server_wrapper() {
     # 确保 .bak 文件存在
     if [[ ! -f "${LS_BIN}.bak" ]]; then
         cp "$LS_BIN" "${LS_BIN}.bak"
+        log "  已备份: ${LS_BIN}.bak"
     fi
+    
+    # 计算并记录文件哈希值（用于审计）
+    if command -v sha256sum &> /dev/null; then
+        local file_hash=$(sha256sum "${LS_BIN}.bak" | awk '{print $1}')
+        log "  文件哈希 (SHA256): $file_hash"
+        echo "[$(date)] Language Server Hash: $file_hash" >> "$LOG_FILE"
+    fi
+    
+    # 解决文件占用冲突：先删除再创建
+    # 这样可以避免 "Text file busy" 错误
+    log_info "  移除旧文件以避免占用冲突..."
+    rm -f "$LS_BIN"
     
     # 创建 wrapper 脚本
     cat > "$LS_BIN" << 'WRAPPER_EOF'
@@ -92,6 +105,15 @@ inject_main_js_proxy() {
         # 恢复原始文件
         if [[ -f "${MAIN_JS}.bak" ]]; then
             cp "${MAIN_JS}.bak" "$MAIN_JS"
+        fi
+    fi
+    
+    # 计算并记录文件哈希值（用于审计）
+    if command -v sha256sum &> /dev/null; then
+        local file_hash=$(sha256sum "${MAIN_JS}.bak" 2>/dev/null | awk '{print $1}')
+        if [[ -n "$file_hash" ]]; then
+            log "  文件哈希 (SHA256): $file_hash"
+            echo "[$(date)] Main JS Hash: $file_hash" >> "$LOG_FILE"
         fi
     fi
     

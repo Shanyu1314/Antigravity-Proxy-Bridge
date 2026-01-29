@@ -39,7 +39,7 @@ check_network_access() {
     check_proxy_availability
 }
 
-# --- 检测代理服务是否运行 ---
+# --- 检测代理服务是否运行（增强版） ---
 check_proxy_availability() {
     local proxy_host proxy_port
     
@@ -52,27 +52,57 @@ check_proxy_availability() {
         return 1
     fi
     
-    log_info "检测代理服务: $proxy_host:$proxy_port"
+    log_info "🔌 检测代理端口联通性: $proxy_host:$proxy_port"
     
-    # 检测端口是否开放
+    local port_open=false
+    
+    # 优先使用 nc 检测
     if command -v nc &> /dev/null; then
         if nc -z -w2 "$proxy_host" "$proxy_port" 2>/dev/null; then
-            log "${GREEN}✅ 代理服务运行正常${NC}"
-            return 0
-        else
-            log_warn "⚠️  无法连接到代理服务 $proxy_host:$proxy_port"
-            log_info "请确保 Clash/V2Ray 等代理服务正在运行"
-            
-            read -p "是否继续配置？(y/N) " -n 1 -r
-            echo ""
-            
-            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                log "用户选择取消"
-                exit 0
-            fi
+            port_open=true
         fi
+    # 备用方案：使用 timeout + telnet
+    elif command -v timeout &> /dev/null && command -v telnet &> /dev/null; then
+        if timeout 2 telnet "$proxy_host" "$proxy_port" 2>/dev/null | grep -q "Connected"; then
+            port_open=true
+        fi
+    # 最后备用：使用 bash 内置的 /dev/tcp
     else
-        log_warn "未安装 nc 工具，跳过代理检测"
+        if timeout 2 bash -c "echo > /dev/tcp/$proxy_host/$proxy_port" 2>/dev/null; then
+            port_open=true
+        fi
+    fi
+    
+    if [[ "$port_open" == true ]]; then
+        log "${GREEN}✅ 代理端口联通性检查通过${NC}"
+        return 0
+    else
+        echo ""
+        log_error "❌ 检测到代理端口未开启！"
+        echo ""
+        log_warn "⚠️  强提醒："
+        echo "  代理服务 $proxy_host:$proxy_port 无法连接"
+        echo ""
+        log_info "💡 可能的原因："
+        echo "  1. Clash/V2Ray 等代理服务未启动"
+        echo "  2. SSH RemoteForward 未配置或未生效"
+        echo "  3. 代理端口配置错误（当前: $proxy_port）"
+        echo ""
+        log_info "📖 解决方案："
+        echo "  - 启动本地代理服务（Clash/V2Ray）"
+        echo "  - 检查 SSH 配置中的 RemoteForward 设置"
+        echo "  - 使用 --proxy 参数指定正确的代理地址"
+        echo ""
+        
+        read -p "是否仍要继续配置？(y/N) " -n 1 -r
+        echo ""
+        
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            log "用户选择取消配置"
+            exit 0
+        fi
+        
+        log_warn "用户选择继续配置（代理端口未开启）"
     fi
 }
 
