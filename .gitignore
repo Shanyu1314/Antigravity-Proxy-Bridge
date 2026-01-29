@@ -1,0 +1,23 @@
+# Backup files
+backup/
+*.bak
+*.backup
+
+# Log files
+*.log
+install.log
+uninstall.log
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test outputs
+test_results/
