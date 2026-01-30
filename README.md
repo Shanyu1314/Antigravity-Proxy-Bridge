@@ -53,13 +53,14 @@ Automatically configure network proxy for Antigravity to solve connection issues
 
 ### 🚀 Quick Start
 
+**国内用户请查看**：[📖 完整上手指南](QUICK_START.md) - 从零开始的详细教程
+
 ```bash
 # Clone repository
 git clone https://github.com/Shanyu1314/Antigravity-Proxy-Bridge.git
 cd Antigravity-Proxy-Bridge
 
 # Run installation script
-chmod +x setup.sh
 sudo ./setup.sh
 
 # Follow the interactive prompts
@@ -157,13 +158,14 @@ MIT License - see [LICENSE](LICENSE) for details
 
 ### 🚀 快速开始
 
+**👉 新手必看**：[📖 完整上手指南](QUICK_START.md) - 从 SSH 配置到 AI 功能测试的完整教程
+
 ```bash
 # 克隆仓库
 git clone https://github.com/Shanyu1314/Antigravity-Proxy-Bridge.git
 cd Antigravity-Proxy-Bridge
 
 # 运行安装脚本
-chmod +x setup.sh
 sudo ./setup.sh
 
 # 按照交互提示操作
