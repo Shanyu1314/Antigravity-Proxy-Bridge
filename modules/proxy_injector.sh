@@ -9,10 +9,101 @@ inject_proxy() {
     log_info "💉 开始注入代理配置..."
     
     check_existing_backup
-    inject_language_server_wrapper
-    inject_main_js_proxy
+    
+    # 1. 检测 Antigravity 模式
+    if is_antigravity_server_mode; then
+        log_info "检测到 Antigravity Server 模式"
+        
+        # 2. 检测网络环境
+        local can_access_internet=$(check_internet_access)
+        
+        # 3. 根据网络情况推荐方案
+        if [[ "$can_access_internet" == "true" ]]; then
+            log_info "✅ 服务器可以访问国际网络"
+            log_info "推荐：不需要配置代理"
+            echo ""
+            read -p "是否仍要配置代理？(y/N): " force_proxy
+            if [[ "$force_proxy" != "y" && "$force_proxy" != "Y" ]]; then
+                log_info "跳过代理配置"
+                return
+            fi
+        else
+            log_warn "❌ 服务器无法访问国际网络"
+            log_info "需要配置代理"
+        fi
+        
+        # 4. 选择配置方式
+        echo ""
+        echo "请选择代理配置方式："
+        echo "  1) 环境变量方式（推荐，更稳定）"
+        echo "  2) graftcp 强制代理（兼容性可能有问题）"
+        echo "  3) 两者都配置（最大兼容性）"
+        read -p "请选择 (1/2/3，默认 1): " proxy_method
+        proxy_method=${proxy_method:-1}
+        
+        case $proxy_method in
+            1)
+                log_info "使用环境变量方式"
+                inject_main_js_proxy
+                ;;
+            2)
+                log_warn "使用 graftcp 方式（可能不稳定）"
+                inject_language_server_wrapper
+                inject_main_js_proxy
+                ;;
+            3)
+                log_info "使用两者结合方式"
+                inject_language_server_wrapper
+                inject_main_js_proxy
+                ;;
+            *)
+                log_error "无效选择，使用默认方式（环境变量）"
+                inject_main_js_proxy
+                ;;
+        esac
+    else
+        # Remote-SSH 模式
+        log_info "检测到 Remote-SSH 模式"
+        inject_language_server_wrapper
+        inject_main_js_proxy
+    fi
     
     log "${GREEN}✅ 代理配置注入完成${NC}"
+}
+
+# --- 检测是否为 Antigravity Server 模式 ---
+is_antigravity_server_mode() {
+    # 检查是否有运行中的 Antigravity Server 进程
+    if ps aux | grep -q "[a]ntigravity-server"; then
+        return 0  # 是 Server 模式
+    fi
+    
+    # 检查是否有 .antigravity-server 目录且包含 bin 目录
+    if [[ -d "$HOME/.antigravity-server/bin" ]]; then
+        return 0  # 是 Server 模式
+    fi
+    
+    return 1  # 不是 Server 模式
+}
+
+# --- 检测网络访问能力 ---
+check_internet_access() {
+    log_info "检测网络访问能力..."
+    
+    # 尝试访问 Google
+    if curl -s --connect-timeout 5 https://www.google.com > /dev/null 2>&1; then
+        echo "true"
+        return 0
+    fi
+    
+    # 尝试访问 Anthropic API
+    if curl -s --connect-timeout 5 https://api.anthropic.com > /dev/null 2>&1; then
+        echo "true"
+        return 0
+    fi
+    
+    echo "false"
+    return 1
 }
 
 # --- 注入 Language Server Wrapper ---

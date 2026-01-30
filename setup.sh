@@ -2,7 +2,7 @@
 
 # ============================================================================
 # Antigravity-Proxy-Bridge - 智能代理配置工具
-# 版本: 1.0.0
+# 版本: 1.2.0
 # 作者: Shanyu1314
 # 许可: MIT License
 # ============================================================================
@@ -63,7 +63,7 @@ show_banner() {
                         |___/                      |___/      
 
 EOF
-    echo -e "${GREEN}=== Antigravity 智能代理配置工具 v1.0.0 ===${NC}"
+    echo -e "${GREEN}=== Antigravity 智能代理配置工具 v1.2.0 ===${NC}"
     echo ""
 }
 
@@ -110,7 +110,7 @@ parse_args() {
                 exit 0
                 ;;
             --version)
-                echo "Antigravity-Proxy-Bridge v1.0.0"
+                echo "Antigravity-Proxy-Bridge v1.2.0"
                 exit 0
                 ;;
             *)

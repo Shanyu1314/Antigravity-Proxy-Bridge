@@ -1,5 +1,63 @@
 # 更新日志
 
+## [v1.2.0] - 2026-01-30
+
+### 🚀 重大改进
+
+#### 1. 智能模式检测与适配
+- **自动检测 Antigravity Server 模式**：检测运行中的进程和目录结构
+- **Server 模式优化**：不使用 graftcp 包装，仅注入环境变量
+- **Remote-SSH 模式保留**：继续使用 graftcp 包装脚本
+
+#### 2. 解决 Server 模式兼容性问题
+- **移除 graftcp 对 Language Server 的包装**（Server 模式）
+- **避免 Go 程序与 graftcp 的兼容性问题**
+- **提高稳定性**：减少 AI 功能崩溃的可能性
+
+### 🔧 技术细节
+
+#### Server 模式配置策略
+```bash
+1. 检测 Antigravity Server 进程
+2. 只注入 Main JS 环境变量
+3. 不修改 Language Server 二进制
+4. 依赖原生环境变量代理支持
+```
+
+#### Remote-SSH 模式配置策略（保持不变）
+```bash
+1. 使用 graftcp 包装 Language Server
+2. 注入 Main JS 环境变量
+3. 强制代理所有网络请求
+```
+
+### 📝 使用建议
+
+- **Server 模式**：确保 SSH Config 配置 `RemoteForward 7890 localhost:7890`
+- **Remote-SSH 模式**：需要安装 graftcp 并配置代理服务
+
+### ⚠️ 破坏性变更
+
+无破坏性变更，完全向后兼容 v1.1.0
+
+### 🔄 升级指南
+
+从 v1.1.0 升级到 v1.2.0：
+
+```bash
+# 1. 如果已安装 v1.1.0，先卸载
+cd Antigravity-Proxy-Bridge
+sudo ./uninstall.sh
+
+# 2. 拉取最新代码
+git pull
+
+# 3. 重新安装
+sudo ./setup.sh
+```
+
+---
+
 ## [v1.1.0] - 2026-01-30
 
 ### 🚀 新增功能

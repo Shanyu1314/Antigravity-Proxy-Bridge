@@ -1,56 +1,38 @@
 # 测试指南
 
-本文档详细说明如何测试 Antigravity-Proxy-Bridge 项目。
+本文档详细说明如何测试 Antigravity-Proxy-Bridge 项目的各项功能。
 
 ## 📋 测试准备
 
-### 1. Push 项目到 GitHub
+### 环境要求
+
+- Linux 服务器（Ubuntu 20.04+ / Debian 11+ / CentOS 8+）
+- Root 或 sudo 权限
+- 已安装 git、curl 等基础工具
+
+### 获取项目
 
 ```bash
-# 在本地 Windows
-cd Antigravity-Proxy-Bridge
-
-# 设置可执行权限（重要！）
-git update-index --chmod=+x setup.sh
-git update-index --chmod=+x uninstall.sh
-git update-index --chmod=+x modules/*.sh
-git update-index --chmod=+x tests/*.sh
-
-# 提交并推送
-git add .
-git commit -m "Initial commit: Complete Antigravity-Proxy-Bridge"
-git push -u origin main
-```
-
-### 2. 在服务器上克隆项目
-
-```bash
-# SSH 登录到服务器
-ssh root@your-server-ip
-
 # 克隆项目
-cd ~
 git clone https://github.com/Shanyu1314/Antigravity-Proxy-Bridge.git
 cd Antigravity-Proxy-Bridge
 
 # 验证文件权限
-ls -la *.sh
-ls -la modules/*.sh
-ls -la tests/*.sh
+ls -la *.sh modules/*.sh tests/*.sh
 ```
 
 ## 🧪 测试场景
 
-### 场景 1：国外 VPS（美国/欧洲）测试
+### 场景 1：国际服务器测试（美国/欧洲）
 
-#### 预期行为
+#### 测试目标
 
-**脚本会检测到可以直连 Google，并提示用户不需要配置代理。**
+验证脚本能够正确检测到服务器可以直接访问国际网络，并给出合理提示。
 
 #### 测试步骤
 
 ```bash
-# 1. 先运行网络测试
+# 1. 运行网络测试
 ./tests/test_network.sh
 ```
 
@@ -62,110 +44,54 @@ ls -la tests/*.sh
    ✅ 成功
 
 2. 测试代理端口 7890...
-   ❌ 端口未开放  # 正常，因为不需要代理
+   ❌ 端口未开放
 
 3. 测试通过代理访问 Google...
-   ❌ 失败  # 正常，因为没有代理服务
+   ❌ 失败
 
 4. 测试 graftcp...
-   ❌ graftcp 未安装  # 或者已安装但不需要
+   ❌ graftcp 未安装
 
 === 测试完成 ===
 ```
 
 ```bash
-# 2. 运行主脚本（试运行）
+# 2. 运行主脚本（试运行模式）
 sudo ./setup.sh --dry-run
 ```
 
-**预期输出**：
-```
-    _          _   _                       _ _         
-   / \   _ __ | |_(_) __ _ _ __ __ ___   _(_) |_ _   _ 
-  ...
+**预期行为**：
+- 检测到可以直接访问国际网络
+- 提示用户通常不需要配置代理
+- 允许用户选择是否继续
 
-=== Antigravity 智能代理配置工具 v1.0.0 ===
+#### 验证点
 
-[INFO] 🔍 正在检测网络环境...
+- ✅ 网络检测正确识别可直连环境
+- ✅ 给出清晰的提示信息
+- ✅ 用户选择 N 后正常退出
+- ✅ 用户选择 y 后可继续配置
 
-✅ 检测到可以直接访问国际网络
-💡 你的服务器（可能在美国/欧洲）通常不需要配置代理！
+### 场景 2：受限网络环境测试
 
-是否仍要继续配置？(y/N)
-```
+#### 测试目标
 
-#### 测试点
+验证脚本在无法直接访问国际网络的环境下能够正确配置代理。
 
-- ✅ 网络检测正确识别可以直连
-- ✅ 给出清晰的提示
-- ✅ 允许用户选择是否继续
-- ✅ 用户输入 N 后正常退出
-
-#### 如果继续执行会怎样？
-
-如果用户选择 `y` 继续：
+#### 前置条件
 
 ```bash
-# 输入 y 继续
-y
+# 1. 安装依赖
+sudo apt update
+sudo apt install -y graftcp curl netcat-openbsd
 
-# 脚本会继续执行
-[INFO] 请选择你的使用场景：
-
-  1) 本地安装的 Antigravity 桌面版 (/usr/share/antigravity)
-  2) 服务器上安装的 Antigravity Server (~/.antigravity-server)
-  3) Remote-SSH 模式（本地 Antigravity 连接远程服务器）
-
-请输入选项 (1/2/3):
+# 2. 确保代理服务运行在 7890 端口（Clash/V2Ray）
 ```
-
-**如果选择 3（Remote-SSH）**：
-```
-[ERROR] ❌ Remote-SSH 模式不需要在服务器上运行此脚本！
-
-💡 正确的配置方法：
-
-  1. 在本地 Windows 打开 Antigravity 设置 (Ctrl+,)
-  2. 切换到 'User' 标签
-  3. 搜索 'proxy'
-  4. 设置 'Http: Proxy' 为: http://127.0.0.1:7890
-  5. 重启 Antigravity
-
-📖 详细指南: docs/remote-ssh-guide.md
-
-# 脚本退出
-```
-
-**如果选择 1 或 2，但没有安装 Antigravity**：
-```
-[INFO] 🔍 正在探测 Antigravity 安装路径...
-[ERROR] 未找到 language_server_linux_x64
-[INFO] 请确认 Antigravity 已正确安装
-# 脚本退出
-```
-
-**如果选择 1 或 2，且安装了 Antigravity**：
-- 会继续执行备份和配置
-- 但由于网络本身可以直连，配置代理反而可能降低性能
-- 这就是为什么脚本会在开始就提示用户
-
-### 场景 2：国内 VPS 测试
-
-#### 预期行为
-
-**脚本会检测到无法访问 Google，提示需要配置代理。**
 
 #### 测试步骤
 
 ```bash
-# 1. 先安装依赖
-sudo apt update
-sudo apt install -y graftcp curl netcat-openbsd
-
-# 2. 配置代理服务（Clash/V2Ray）
-# 确保代理服务运行在 7890 端口
-
-# 3. 测试网络
+# 1. 测试网络
 ./tests/test_network.sh
 ```
 
@@ -174,13 +100,13 @@ sudo apt install -y graftcp curl netcat-openbsd
 === 网络连接测试 ===
 
 1. 测试 Google 直连...
-   ❌ 失败  # 国内无法直连
+   ❌ 失败
 
 2. 测试代理端口 7890...
-   ✅ 端口开放  # 代理服务运行中
+   ✅ 端口开放
 
 3. 测试通过代理访问 Google...
-   ✅ 成功  # 代理工作正常
+   ✅ 成功
 
 4. 测试 graftcp...
    ✅ graftcp 工作正常
@@ -189,41 +115,27 @@ sudo apt install -y graftcp curl netcat-openbsd
 ```
 
 ```bash
-# 4. 运行主脚本
+# 2. 运行主脚本（试运行模式）
 sudo ./setup.sh --dry-run
 ```
 
-**预期输出**：
-```
-=== Antigravity 智能代理配置工具 v1.0.0 ===
-
-[INFO] 🔍 正在检测网络环境...
-
-⚠️  检测到无法访问国际网络（可能是国内 VPS）
-📦 需要配置代理以使用 Antigravity AI 功能
-
-[INFO] 检测代理服务: 127.0.0.1:7890
-✅ 代理服务运行正常
-
-[INFO] 请选择你的使用场景：
-...
-```
+**预期行为**：
+- 检测到无法访问国际网络
+- 提示需要配置代理
+- 检测代理服务状态
+- 继续配置流程
 
 #### 完整安装测试
 
 ```bash
-# 如果有 Antigravity Server 安装
+# 执行完整安装
 sudo ./setup.sh
 
-# 按提示选择场景 2（服务器版）
-# 脚本会：
-# 1. 探测路径
-# 2. 备份文件
-# 3. 注入代理配置
-# 4. 验证安装
+# 按提示选择场景（如服务器版）
+# 验证安装结果
 ```
 
-**验证安装**：
+**验证步骤**：
 ```bash
 # 检查备份
 ls -la backup/
@@ -231,57 +143,49 @@ ls -la backup/
 # 检查日志
 cat install.log
 
-# 检查 wrapper
-cat ~/.antigravity-server/bin/*/language_server_linux_x64 | head -20
+# 检查配置
+head -20 ~/.antigravity-server/bin/*/out/server-main.js
 
 # 测试卸载
 sudo ./uninstall.sh
 ```
 
-### 场景 3：Remote-SSH 模式测试
+### 场景 3：Remote-SSH 模式验证
+
+#### 测试目标
+
+验证脚本能够正确识别 Remote-SSH 场景并给出正确引导。
 
 #### 测试步骤
 
 ```bash
-# 在服务器上运行
+# 运行脚本并选择场景 3
 sudo ./setup.sh
-
-# 选择场景 3
+# 选择: 3) Remote-SSH 模式
 ```
 
-**预期输出**：
-```
-请输入选项 (1/2/3): 3
+**预期行为**：
+- 识别 Remote-SSH 场景
+- 给出清晰的配置引导
+- 不执行任何文件修改
+- 提供文档链接
 
-[ERROR] ❌ Remote-SSH 模式不需要在服务器上运行此脚本！
+#### 验证点
 
-💡 正确的配置方法：
-
-  1. 在本地 Windows 打开 Antigravity 设置 (Ctrl+,)
-  2. 切换到 'User' 标签
-  3. 搜索 'proxy'
-  4. 设置 'Http: Proxy' 为: http://127.0.0.1:7890
-  5. 重启 Antigravity
-
-📖 详细指南: docs/remote-ssh-guide.md
-```
-
-#### 验证
-
-- ✅ 脚本正确识别 Remote-SSH 场景
-- ✅ 给出清晰的引导
-- ✅ 不执行任何修改
-- ✅ 提供文档链接
+- ✅ 正确识别场景
+- ✅ 提供本地配置指导
+- ✅ 脚本安全退出
+- ✅ 无文件被修改
 
 ## 📊 测试矩阵
 
-| 场景 | 网络环境 | Antigravity | 预期行为 |
-|------|---------|-------------|---------|
-| 美国 VPS | 可直连 | 未安装 | 提示不需要 → 退出 |
-| 美国 VPS | 可直连 | 已安装 | 提示不需要 → 可选继续 |
-| 国内 VPS | 无法直连 | 未安装 | 提示需要 → 找不到路径 → 退出 |
-| 国内 VPS | 无法直连 | 已安装 | 提示需要 → 正常配置 |
-| Remote-SSH | 任意 | 任意 | 识别场景 → 引导 → 退出 |
+| 网络环境 | Antigravity 状态 | 预期行为 |
+|---------|----------------|---------|
+| 可直连国际网络 | 未安装 | 提示不需要配置 → 退出 |
+| 可直连国际网络 | 已安装 | 提示不需要配置 → 可选继续 |
+| 受限网络 | 未安装 | 提示需要配置 → 找不到路径 → 退出 |
+| 受限网络 | 已安装 | 提示需要配置 → 正常配置流程 |
+| Remote-SSH | 任意 | 识别场景 → 提供引导 → 退出 |
 
 ## 🔍 详细测试清单
 
@@ -421,7 +325,7 @@ netstat -tlnp | grep 7890
 
 ## 🎯 推荐测试流程
 
-### 第一次测试（国外 VPS）
+### 基础功能验证
 
 ```bash
 # 1. 克隆项目
@@ -431,39 +335,43 @@ cd Antigravity-Proxy-Bridge
 # 2. 运行网络测试
 ./tests/test_network.sh
 
-# 3. 试运行
+# 3. 试运行模式
 sudo ./setup.sh --dry-run
 
-# 4. 观察输出，验证网络检测是否正确
+# 4. 观察输出，验证检测逻辑
 ```
 
-### 第二次测试（国内 VPS）
+### 完整安装测试
 
 ```bash
-# 1. 安装依赖
+# 1. 安装依赖（如需要）
 sudo apt install -y graftcp curl netcat-openbsd
 
-# 2. 配置代理服务
+# 2. 配置代理服务（如需要）
 
 # 3. 运行完整测试
 ./tests/test_network.sh
 sudo ./setup.sh --dry-run
 
-# 4. 如果有 Antigravity，执行完整安装
+# 4. 执行完整安装（如有 Antigravity）
 sudo ./setup.sh
 
-# 5. 测试卸载
+# 5. 验证安装结果
+cat install.log
+ls -la backup/
+
+# 6. 测试卸载功能
 sudo ./uninstall.sh
 ```
 
-## 💡 测试技巧
+## 💡 测试建议
 
-1. **先用 --dry-run** - 安全地预览操作
-2. **查看日志** - `cat install.log` 了解详细信息
-3. **保留备份** - 测试完不要删除 backup 目录
-4. **多次测试** - 测试安装、卸载、重新安装的完整流程
-5. **不同场景** - 在不同的服务器环境测试
+1. **使用试运行模式** - 先用 `--dry-run` 预览操作
+2. **查看详细日志** - 通过 `cat install.log` 了解执行细节
+3. **保留备份文件** - 测试完成后检查 backup 目录
+4. **测试完整流程** - 验证安装、卸载、重新安装的完整周期
+5. **多环境测试** - 在不同网络环境和服务器配置下测试
 
 ---
 
-**记住：国外 VPS 测试的重点是验证"智能检测"功能是否正确工作！**
+**测试重点：验证智能检测功能在不同网络环境下的准确性**

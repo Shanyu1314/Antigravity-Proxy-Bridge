@@ -1,6 +1,6 @@
 # Antigravity-Proxy-Bridge
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/Shanyu1314/Antigravity-Proxy-Bridge/releases)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/Shanyu1314/Antigravity-Proxy-Bridge/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Linux-lightgrey.svg)](https://github.com/Shanyu1314/Antigravity-Proxy-Bridge)
 
@@ -18,6 +18,8 @@ Automatically configure network proxy for Antigravity to solve connection issues
 
 - 🔍 **Smart Network Detection** - Automatically detects if proxy is needed
 - 🎯 **Scenario Recognition** - Identifies 3 usage scenarios and provides correct guidance
+- 🤖 **Intelligent Mode Detection** - Auto-detects Antigravity Server vs Remote-SSH mode
+- 🎛️ **Flexible Configuration** - Choose between environment variables, graftcp, or both
 - 📂 **Intelligent Path Discovery** - Supports dynamic hash paths in `~/.antigravity-server/`
 - 💾 **Lossless Backup** - Automatic backup before any modifications
 - 🔄 **One-Click Uninstall** - Complete restoration to original state
@@ -120,6 +122,8 @@ MIT License - see [LICENSE](LICENSE) for details
 
 - 🔍 **智能网络检测** - 自动判断是否需要配置代理
 - 🎯 **场景识别** - 识别 3 种使用场景并提供正确引导
+- 🤖 **智能模式检测** - 自动识别 Antigravity Server 和 Remote-SSH 模式
+- 🎛️ **灵活配置** - 可选择环境变量、graftcp 或两者结合
 - 📂 **智能路径探测** - 支持 `~/.antigravity-server/` 下的动态哈希路径
 - 💾 **无损备份** - 修改前自动备份所有文件
 - 🔄 **一键卸载** - 完整恢复到原始状态
