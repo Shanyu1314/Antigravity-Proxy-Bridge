@@ -48,11 +48,21 @@ inject_proxy() {
                 ;;
             2)
                 log_warn "使用 graftcp 方式（可能不稳定）"
+                # 检查 graftcp 依赖
+                if ! check_graftcp_dependency; then
+                    log_error "无法继续：缺少 graftcp"
+                    exit 1
+                fi
                 inject_language_server_wrapper
                 inject_main_js_proxy
                 ;;
             3)
                 log_info "使用两者结合方式"
+                # 检查 graftcp 依赖
+                if ! check_graftcp_dependency; then
+                    log_error "无法继续：缺少 graftcp"
+                    exit 1
+                fi
                 inject_language_server_wrapper
                 inject_main_js_proxy
                 ;;
@@ -64,6 +74,11 @@ inject_proxy() {
     else
         # Remote-SSH 模式
         log_info "检测到 Remote-SSH 模式"
+        # 检查 graftcp 依赖
+        if ! check_graftcp_dependency; then
+            log_error "Remote-SSH 模式需要 graftcp"
+            exit 1
+        fi
         inject_language_server_wrapper
         inject_main_js_proxy
     fi
